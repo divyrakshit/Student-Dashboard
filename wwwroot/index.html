@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080c20; --cyan: #00f5d4; --violet: #9b5de5;
+      --pink: #f72585; --gold: #ffd60a;
+      --glass: rgba(255,255,255,0.06); --glass-b: rgba(255,255,255,0.13);
+      --blur: blur(20px); --text: #e8eaf6; --muted: rgba(232,234,246,0.5); --r: 18px;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+    body::before {
+      content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse 70% 55% at 10% 15%, rgba(155,93,229,.20) 0%,transparent 60%),
+        radial-gradient(ellipse 55% 45% at 90% 80%, rgba(0,245,212,.16) 0%,transparent 55%),
+        radial-gradient(ellipse 45% 40% at 50% 105%,rgba(247,37,133,.14) 0%,transparent 55%);
+      animation:bgF 12s ease-in-out infinite alternate;
+    }
+    @keyframes bgF { from{opacity:.9;transform:scale(1)} to{opacity:1;transform:scale(1.04)} }
+    body::after {
+      content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+      background-size:55px 55px;
+    }
+    .page { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:44px 22px 90px; }
+
+    header { text-align:center; margin-bottom:50px; animation:fadeDown .65s ease both; }
+    .badge { display:inline-block; font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--cyan); border:1px solid rgba(0,245,212,.35); border-radius:100px; padding:6px 18px; margin-bottom:18px; }
+    h1 { font-family:'Syne',sans-serif; font-size:clamp(2rem,5vw,3.4rem); font-weight:800; line-height:1.1; background:linear-gradient(135deg,#fff 25%,var(--cyan) 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:14px; }
+    header p { color:var(--muted); font-size:.95rem; max-width:520px; margin:0 auto; line-height:1.65; }
+
+    .glass { background:var(--glass); border:1px solid var(--glass-b); box-shadow:0 8px 32px rgba(0,0,0,.4); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur); border-radius:var(--r); }
+
+    .controls { padding:34px 38px; margin-bottom:22px; animation:fadeUp .65s .1s ease both; }
+    .section-label { font-family:'Syne',sans-serif; font-size:.68rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--violet); margin-bottom:22px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+    .field { display:flex; flex-direction:column; gap:5px; }
+    .field label { font-size:.72rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+    .field select { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:10px; color:#fff; font-family:'DM Sans',sans-serif; font-size:.95rem; padding:10px 14px; min-width:200px; outline:none; cursor:pointer; transition:border-color .2s,box-shadow .2s; }
+    .field select option { background:#111638; color:#fff; }
+    .field select:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,245,212,.12); }
+
+    .btn { font-family:'Syne',sans-serif; font-size:.82rem; font-weight:700; letter-spacing:.4px; border:none; cursor:pointer; border-radius:12px; padding:12px 26px; transition:transform .15s,box-shadow .2s,opacity .2s; display:flex; align-items:center; gap:8px; }
+    .btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .btn:active { transform:scale(.97); }
+    .btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
+    .btn-seq { background:linear-gradient(135deg,#f72585,#b5179e); color:#fff; box-shadow:0 4px 18px rgba(247,37,133,.35); }
+    .btn-seq:hover:not(:disabled) { box-shadow:0 6px 28px rgba(247,37,133,.55); }
+    .btn-par { background:linear-gradient(135deg,#00f5d4,#00bbf9); color:#080c20; box-shadow:0 4px 18px rgba(0,245,212,.30); }
+    .btn-par:hover:not(:disabled) { box-shadow:0 6px 28px rgba(0,245,212,.50); }
+    .btn-cmp { background:linear-gradient(135deg,#ffd60a,#f77f00); color:#080c20; box-shadow:0 4px 18px rgba(255,214,10,.28); }
+    .btn-cmp:hover:not(:disabled) { box-shadow:0 6px 28px rgba(255,214,10,.48); }
+    .btn-add { background:linear-gradient(135deg,#9b5de5,#560bad); color:#fff; box-shadow:0 4px 18px rgba(155,93,229,.35); }
+    .btn-add:hover { box-shadow:0 6px 28px rgba(155,93,229,.55); transform:translateY(-2px); }
+    .btn-save { background:linear-gradient(135deg,#00f5d4,#00bbf9); color:#080c20; width:100%; justify-content:center; margin-top:6px; }
+    .btn-save:hover { box-shadow:0 6px 28px rgba(0,245,212,.5); transform:translateY(-2px); }
+
+    .spin { width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite;display:none; }
+    .btn-par .spin,.btn-cmp .spin,.btn-save .spin { border-top-color:#080c20;border-color:rgba(0,0,0,.2); }
+    .btn.busy .spin { display:block; }
+    .btn.busy .lbl { opacity:.6; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    .timers { display:flex;flex-wrap:wrap;gap:12px;margin-top:22px; }
+    .t-pill { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:7px 16px;font-size:.8rem; }
+    .dot { width:8px;height:8px;border-radius:50%; }
+    .d-seq { background:var(--pink);box-shadow:0 0 7px var(--pink); }
+    .d-par { background:var(--cyan);box-shadow:0 0 7px var(--cyan); }
+    .t-pill .val { font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem; }
+    .speedup { background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.3);border-radius:100px;padding:7px 18px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--cyan); }
+    .prog-wrap { margin-top:18px;height:3px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;display:none; }
+    .prog-wrap.on { display:block; }
+    .prog-bar { height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));border-radius:3px; }
+    @keyframes prog { from{width:0} to{width:100%} }
+
+    /* student chips bar */
+    .student-bar { display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 22px;margin-bottom:22px;animation:fadeUp .6s .15s ease both; }
+    .student-chip { display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:7px 16px;font-size:.82rem;cursor:pointer;transition:all .2s;user-select:none; }
+    .student-chip:hover { border-color:var(--cyan);color:var(--cyan); }
+    .student-chip.active { background:rgba(0,245,212,.12);border-color:var(--cyan);color:var(--cyan); }
+    .chip-del { background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;line-height:1;padding:0 0 0 4px;transition:color .15s; }
+    .chip-del:hover { color:var(--pink); }
+
+    /* data grid */
+    .grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:26px;animation:fadeUp .6s .2s ease both; }
+    .card { padding:28px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s; }
+    .card:hover { transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.55); }
+    .card::after { content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0; }
+    .c-profile::after { background:linear-gradient(90deg,var(--violet),var(--cyan)); }
+    .c-marks::after   { background:linear-gradient(90deg,var(--cyan),var(--gold)); }
+    .c-attend::after  { background:linear-gradient(90deg,var(--pink),var(--violet)); }
+    .c-head { display:flex;align-items:center;gap:13px;margin-bottom:22px; }
+    .c-icon { width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0; }
+    .i-p{background:rgba(155,93,229,.22);} .i-m{background:rgba(0,245,212,.18);} .i-a{background:rgba(247,37,133,.18);}
+    .c-title { font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700; }
+    .c-sub { font-size:.72rem;color:var(--muted); }
+    .info-row { display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85rem; }
+    .info-row:last-child { border-bottom:none; }
+    .ik{color:var(--muted);} .iv{font-weight:500;color:#fff;text-align:right;}
+    .sub-row { margin:7px 0; }
+    .sub-meta { display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px; }
+    .sn{color:var(--muted);} .ss{font-weight:600;color:#fff;}
+    .bar-t { height:5px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden; }
+    .bar-f { height:100%;border-radius:5px;transition:width 1s cubic-bezier(.4,0,.2,1); }
+    .grade { display:inline-block;font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;padding:6px 22px;border-radius:10px;margin-top:14px; }
+    .ring-row { display:flex;align-items:center;gap:20px;margin-bottom:16px; }
+    .status-tag { display:inline-flex;align-items:center;gap:5px;font-size:.75rem;font-weight:600;padding:5px 14px;border-radius:100px; }
+    .eli{background:rgba(0,245,212,.12);color:var(--cyan);border:1px solid rgba(0,245,212,.3);}
+    .det{background:rgba(247,37,133,.12);color:var(--pink);border:1px solid rgba(247,37,133,.3);}
+
+    /* compare */
+    .cmp-panel { padding:34px 38px;margin-bottom:26px;animation:fadeUp .6s .3s ease both; }
+    .cmp-title { font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:26px; }
+    .cmp-grid { display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px; }
+    @media(max-width:580px){.cmp-grid{grid-template-columns:1fr;}}
+    .cmp-box { background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:20px; }
+    .cmp-box h4 { font-family:'Syne',sans-serif;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px; }
+    .cmp-box h4.sq{color:var(--pink);} .cmp-box h4.pa{color:var(--cyan);}
+    .big-t { font-family:'Syne',sans-serif;font-weight:800;font-size:2.6rem;line-height:1;margin-bottom:4px; }
+    .sq-t{color:var(--pink);} .pa-t{color:var(--cyan);}
+    .cmp-box p{font-size:.8rem;color:var(--muted);line-height:1.55;}
+    .winner{background:linear-gradient(135deg,rgba(0,245,212,.10),rgba(155,93,229,.10));border:1px solid rgba(0,245,212,.22);border-radius:13px;padding:18px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+    .w-icon{font-size:1.8rem;} .w-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--cyan);margin-bottom:3px;} .w-desc{font-size:.82rem;color:var(--muted);}
+
+    /* modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+    .overlay.open{display:flex;}
+    .modal{background:#0f1535;border:1px solid rgba(255,255,255,.15);border-radius:22px;padding:36px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:pop .35s cubic-bezier(.34,1.56,.64,1) both;}
+    .modal-hd{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;}
+    .close-btn{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;}
+    .close-btn:hover{color:#fff;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+    .ff{display:flex;flex-direction:column;gap:6px;} .ff.full{grid-column:1/-1;}
+    .ff label{font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+    .ff input,.ff select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;padding:10px 14px;outline:none;transition:border-color .2s;}
+    .ff select option{background:#111638;}
+    .ff input:focus,.ff select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,245,212,.12);}
+
+    .skel{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:7px;height:13px;margin-bottom:13px;}
+    @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+    .placeholder{text-align:center;padding:42px 20px;color:var(--muted);font-size:.88rem;}
+    .placeholder .ico{font-size:2.6rem;margin-bottom:12px;opacity:.45;}
+
+    #toast{position:fixed;bottom:28px;right:28px;background:rgba(18,22,52,.96);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(18px);border-radius:13px;padding:14px 20px;font-size:.83rem;max-width:300px;z-index:999;transform:translateY(130%);transition:transform .32s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.5);}
+    #toast.show{transform:translateY(0);}
+
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+    .pop{animation:pop .45s cubic-bezier(.34,1.56,.64,1) both;}
+    @media(max-width:580px){.controls,.cmp-panel{padding:22px;}.form-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="badge">⚡ Async / Await Demo</div>
+    <h1>Student Dashboard</h1>
+    <p>Live demo of <strong>Sequential</strong> vs <strong>Parallel</strong> API loading using <code>async/await</code> and <code>Task.WhenAll()</code></p>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls glass">
+    <div class="section-label">🎛 Controls</div>
+    <div class="btn-row">
+      <div class="field">
+        <label>Select Student</label>
+        <select id="studentSelect" onchange="onSelectChange()"></select>
+      </div>
+      <button class="btn btn-seq" id="bSeq" onclick="load('sequential')">
+        <div class="spin"></div><span class="lbl">🔴 Sequential Load</span>
+      </button>
+      <button class="btn btn-par" id="bPar" onclick="load('parallel')">
+        <div class="spin"></div><span class="lbl">🟢 Parallel Load</span>
+      </button>
+      <button class="btn btn-cmp" id="bCmp" onclick="compare()">
+        <div class="spin"></div><span class="lbl">⚡ Compare Both</span>
+      </button>
+      <button class="btn btn-add" onclick="openModal()">
+        <span class="lbl">➕ Add Student</span>
+      </button>
+    </div>
+    <div class="timers" id="timers" style="display:none">
+      <div class="t-pill" id="pSeq" style="display:none"><span class="dot d-seq"></span>Sequential: <span class="val" id="vSeq">—</span></div>
+      <div class="t-pill" id="pPar" style="display:none"><span class="dot d-par"></span>Parallel: <span class="val" id="vPar">—</span></div>
+      <span class="speedup" id="spd" style="display:none"></span>
+    </div>
+    <div class="prog-wrap" id="prog"><div class="prog-bar" id="pbar"></div></div>
+  </div>
+
+  <!-- Student chips -->
+  <div class="student-bar glass" id="chipBar"></div>
+
+  <!-- Data grid -->
+  <div class="grid" id="grid">
+    <div class="glass card c-profile"><div class="placeholder"><div class="ico">👤</div>Select a student and click load</div></div>
+    <div class="glass card c-marks">  <div class="placeholder"><div class="ico">📊</div>Select a student and click load</div></div>
+    <div class="glass card c-attend"> <div class="placeholder"><div class="ico">📅</div>Select a student and click load</div></div>
+  </div>
+
+  <!-- Compare panel -->
+  <div class="cmp-panel glass" id="cmpPanel" style="display:none">
+    <div class="cmp-title">⚡ Sequential vs Parallel — Result</div>
+    <div class="cmp-grid">
+      <div class="cmp-box"><h4 class="sq">Sequential</h4><div class="big-t sq-t" id="cSeq">—</div><div style="color:var(--muted);font-size:.75rem;margin-bottom:8px">seconds</div><p>Profile → Marks → Attendance one by one. Total ≈ 3 × 2s = 6s.</p></div>
+      <div class="cmp-box"><h4 class="pa">Parallel</h4><div class="big-t pa-t" id="cPar">—</div><div style="color:var(--muted);font-size:.75rem;margin-bottom:8px">seconds</div><p>All three via Task.WhenAll(). Total ≈ 2s.</p></div>
+    </div>
+    <div class="winner"><div class="w-icon">🏆</div><div><div class="w-title" id="wTitle">Parallel wins!</div><div class="w-desc" id="wDesc"></div></div></div>
+  </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-hd">➕ Add New Student <button class="close-btn" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="ff"><label>Student ID</label><input id="f-id" type="number" placeholder="e.g. 2" min="1"/></div>
+      <div class="ff"><label>Year</label><select id="f-year"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></div>
+      <div class="ff full"><label>Full Name</label><input id="f-name" type="text" placeholder="e.g. Priya Patel"/></div>
+      <div class="ff full"><label>Email</label><input id="f-email" type="email" placeholder="e.g. priya@college.edu"/></div>
+      <div class="ff full"><label>Course</label><input id="f-course" type="text" placeholder="e.g. B.Tech Information Technology"/></div>
+      <div class="ff full"><label>Department</label><input id="f-dept" type="text" placeholder="e.g. Information Technology"/></div>
+    </div>
+    <button class="btn btn-save" onclick="saveStudent()">
+      <div class="spin"></div><span class="lbl">✅ Save & Load Dashboard</span>
+    </button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = 'http://localhost:5000';
+  const $   = id => document.getElementById(id);
+
+  // student store
+  const students = {};
+  let currentId  = 1;
+
+  // seed default student
+  addStudentData(1,'Rahul Sharma','rahul.sharma@college.edu','B.Tech Computer Science',3,'Computer Science & Engineering');
+
+  function addStudentData(id,name,email,course,year,dept){
+    students[id]={id,name,email,course,year,department:dept};
+    // dropdown option
+    const sel=$('studentSelect');
+    const opt=document.createElement('option');
+    opt.value=id; opt.textContent=`Student #${id} — ${name}`;
+    sel.appendChild(opt);
+    // chip
+    const bar=$('chipBar');
+    const chip=document.createElement('span');
+    chip.className='student-chip'+(id===1?' active':'');
+    chip.id='chip-'+id;
+    chip.innerHTML=`👤 ${name.split(' ')[0]} #${id}${id===1?'':'<button class="chip-del" title="Remove" onclick="delStudent('+id+',event)">✕</button>'}`;
+    chip.onclick=(e)=>{ if(!e.target.classList.contains('chip-del')) selectStudent(id); };
+    bar.appendChild(chip);
+  }
+
+  /* ── toast ── */
+  function toast(msg,ok=true){
+    const el=$('toast'); el.textContent=msg;
+    el.style.borderColor=ok?'rgba(0,245,212,.4)':'rgba(247,37,133,.4)';
+    el.classList.add('show'); clearTimeout(el._t);
+    el._t=setTimeout(()=>el.classList.remove('show'),3200);
+  }
+
+  /* ── lock ── */
+  function lock(on){['bSeq','bPar','bCmp'].forEach(id=>$(id).disabled=on);}
+
+  /* ── progress ── */
+  function startProg(sec){
+    const w=$('prog'),b=$('pbar'); w.classList.add('on');
+    b.style.animation='none'; b.offsetHeight;
+    b.style.animation=`prog ${sec}s linear forwards`;
+  }
+  function stopProg(){$('prog').classList.remove('on');}
+
+  /* ── skeletons ── */
+  function skeletons(){
+    $('grid').innerHTML=['c-profile','c-marks','c-attend'].map(c=>
+      `<div class="glass card ${c}">${[1,2,3,4,5].map(()=>`<div class="skel" style="width:${55+Math.random()*40}%"></div>`).join('')}</div>`
+    ).join('');
+  }
+
+  /* ── bar colour ── */
+  function bc(p){ return p>=80?'linear-gradient(90deg,#00f5d4,#00bbf9)':p>=60?'linear-gradient(90deg,#ffd60a,#f77f00)':'linear-gradient(90deg,#f72585,#b5179e)'; }
+
+  /* ── row helper ── */
+  function row(k,v){ return `<div class="info-row"><span class="ik">${k}</span><span class="iv">${v}</span></div>`; }
+
+  /* ── render profile ── */
+  function rProfile(p){
+    const s=students[p.studentId]||{};
+    return `<div class="c-head"><div class="c-icon i-p">👤</div><div><div class="c-title">${s.name||p.name}</div><div class="c-sub">Student Profile</div></div></div>
+    ${row('ID','#'+p.studentId)}${row('Email',s.email||p.email)}${row('Course',s.course||p.course)}${row('Year','Year '+(s.year||p.year))}${row('Dept',s.department||p.department)}`;
+  }
+
+  /* ── render marks ── */
+  function rMarks(m){
+    const bars=m.subjects.map(s=>{ const p=Math.round(s.marksObtained/s.maxMarks*100);
+      return `<div class="sub-row"><div class="sub-meta"><span class="sn">${s.subject}</span><span class="ss">${s.marksObtained}/${s.maxMarks}</span></div><div class="bar-t"><div class="bar-f" style="width:${p}%;background:${bc(p)}"></div></div></div>`;
+    }).join('');
+    const gc=m.grade==='A+'?'#00f5d4':m.grade==='A'?'#00bbf9':m.grade==='B'?'#ffd60a':'#f72585';
+    return `<div class="c-head"><div class="c-icon i-m">📊</div><div><div class="c-title">Academic Marks</div><div class="c-sub">Semester Performance</div></div></div>
+    ${bars}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+      <span style="color:var(--muted);font-size:.83rem">Overall: <strong style="color:#fff">${m.totalPercentage}%</strong></span>
+      <span class="grade" style="background:${gc}20;color:${gc};border:1px solid ${gc}50">Grade ${m.grade}</span>
+    </div>`;
+  }
+
+  /* ── render attendance ── */
+  /* FIX: use pure SVG <text> elements positioned at the exact geometric centre of the circle.
+     No HTML overlay, no absolute positioning — SVG handles centering natively. */
+  function rAttend(a){
+    const pct = a.attendancePercentage;
+
+    /* ---- ring geometry ----
+       SVG canvas  : 200 × 200
+       Circle centre: (100, 100)
+       Radius       : 72  →  diameter 144, leaving 28px margin on each side
+       Stroke-width : 10  →  half = 5, so visible ring from r 67 to 77, well inside canvas
+       This gives plenty of empty space (r-sw/2 = 67px inner clear area) for the text.
+    */
+    const W=200, CX=100, CY=100, R=72, SW=10;
+    const circ   = +(2*Math.PI*R).toFixed(3);
+    const offset = +(circ*(1-pct/100)).toFixed(3);
+    const sc     = pct>=75 ? '#00f5d4' : '#f72585';
+    const eli    = !a.status.toLowerCase().includes('detained');
+
+    const bars=a.subjectWise.map(s=>{
+      const p2=Math.round(s.attended/s.total*100);
+      return `<div class="sub-row"><div class="sub-meta"><span class="sn">${s.subject}</span><span class="ss">${s.attended}/${s.total}</span></div><div class="bar-t"><div class="bar-f" style="width:${p2}%;background:${bc(p2)}"></div></div></div>`;
+    }).join('');
+
+    /* SVG text is drawn AFTER the circles so it sits on top.
+       y values: percentage at CY-10, "present" at CY+16.
+       Both use text-anchor="middle" so they self-centre horizontally at CX. */
+    return `
+    <div class="c-head"><div class="c-icon i-a">📅</div><div><div class="c-title">Attendance</div><div class="c-sub">Academic Year</div></div></div>
+    <div class="ring-row">
+      <svg width="${W}" height="${W}" viewBox="0 0 ${W} ${W}" style="flex-shrink:0;display:block;">
+        <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="${SW}"/>
+        <circle cx="${CX}" cy="${CY}" r="${R}" fill="none"
+          stroke="${sc}" stroke-width="${SW}" stroke-linecap="round"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+          transform="rotate(-90 ${CX} ${CY})"/>
+        <text x="${CX}" y="${CY}" dy="-8"
+          text-anchor="middle" dominant-baseline="middle"
+          font-family="Syne,sans-serif" font-weight="800" font-size="20" fill="${sc}">${pct}%</text>
+        <text x="${CX}" y="${CY}" dy="18"
+          text-anchor="middle" dominant-baseline="middle"
+          font-family="DM Sans,sans-serif" font-size="13" fill="rgba(232,234,246,0.55)">present</text>
+      </svg>
+      <div>
+        <span class="status-tag ${eli?'eli':'det'}">${eli?'✓ Eligible':'✗ Detained'}</span>
+        <div style="font-size:.79rem;color:var(--muted);margin-top:8px">${a.attendedClasses} / ${a.totalClasses} classes</div>
+      </div>
+    </div>
+    ${bars}`;
+  }
+
+  /* ── load ── */
+  async function load(mode){
+    const id=currentId;
+    const btn=mode==='sequential'?'bSeq':'bPar';
+    $(btn).classList.add('busy'); lock(true); skeletons(); startProg(mode==='sequential'?6.5:2.5);
+    try{
+      const r=await fetch(`${API}/api/dashboard/${mode}/${id}`);
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d=await r.json();
+      $('grid').innerHTML=`
+        <div class="glass card c-profile pop">${rProfile(d.profile)}</div>
+        <div class="glass card c-marks pop" style="animation-delay:.07s">${rMarks(d.marks)}</div>
+        <div class="glass card c-attend pop" style="animation-delay:.14s">${rAttend(d.attendance)}</div>`;
+      $('timers').style.display='flex';
+      $(mode==='sequential'?'pSeq':'pPar').style.display='flex';
+      $(mode==='sequential'?'vSeq':'vPar').textContent=d.timeTakenSeconds+'s';
+      refreshSpeedup();
+      toast(`${mode==='sequential'?'🔴 Sequential':'🟢 Parallel'} done in ${d.timeTakenSeconds}s`);
+    }catch(e){
+      $('grid').innerHTML=`<div class="glass card" style="grid-column:1/-1;padding:38px;text-align:center;color:var(--pink)">⚠️ Cannot reach API.<br><br><span style="color:var(--muted);font-size:.82rem">Make sure <code>dotnet run</code> is running on port 5000.</span></div>`;
+      toast('❌ '+e.message,false);
+    }finally{$(btn).classList.remove('busy');lock(false);stopProg();}
+  }
+
+  /* ── compare ── */
+  async function compare(){
+    lock(true);$('bCmp').classList.add('busy');startProg(9);
+    toast('⏳ Running sequential then parallel (~9s)…');
+    $('cmpPanel').style.display='none';
+    try{
+      const r=await fetch(`${API}/api/dashboard/compare/${currentId}`);
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d=await r.json();
+      $('timers').style.display='flex';
+      $('pSeq').style.display='flex';$('vSeq').textContent=d.sequentialSeconds+'s';
+      $('pPar').style.display='flex';$('vPar').textContent=d.parallelSeconds+'s';
+      refreshSpeedup(d.speedupFactor);
+      $('cSeq').textContent=d.sequentialSeconds;
+      $('cPar').textContent=d.parallelSeconds;
+      $('wTitle').textContent=`⚡ Parallel is ${d.speedupFactor}`;
+      $('wDesc').textContent=`Saved ${d.timeSavedSeconds}s — Task.WhenAll() runs all tasks simultaneously.`;
+      $('cmpPanel').style.display='block';
+      $('cmpPanel').classList.add('pop');
+      toast(`✅ Parallel is ${d.speedupFactor}`);
+    }catch(e){toast('❌ '+e.message,false);}
+    finally{$('bCmp').classList.remove('busy');lock(false);stopProg();}
+  }
+
+  function refreshSpeedup(label){
+    const s=parseFloat($('vSeq').textContent),p=parseFloat($('vPar').textContent),el=$('spd');
+    if(!isNaN(s)&&!isNaN(p)&&p>0){el.textContent=`⚡ Parallel is ${label||((s/p).toFixed(2)+'x faster')}`;el.style.display='block';}
+  }
+
+  /* ── student management ── */
+  function selectStudent(id){
+    currentId=id;
+    document.querySelectorAll('.student-chip').forEach(c=>c.classList.remove('active'));
+    const chip=$('chip-'+id); if(chip) chip.classList.add('active');
+    $('studentSelect').value=id;
+    $('timers').style.display='none';
+    $('pSeq').style.display='none';$('pPar').style.display='none';$('spd').style.display='none';
+    $('cmpPanel').style.display='none';
+    $('grid').innerHTML=`
+      <div class="glass card c-profile"><div class="placeholder"><div class="ico">👤</div>Click load to view</div></div>
+      <div class="glass card c-marks"><div class="placeholder"><div class="ico">📊</div>Click load to view</div></div>
+      <div class="glass card c-attend"><div class="placeholder"><div class="ico">📅</div>Click load to view</div></div>`;
+  }
+  function onSelectChange(){ selectStudent(parseInt($('studentSelect').value)); }
+
+  function openModal(){ $('overlay').classList.add('open'); }
+  function closeModal(){ $('overlay').classList.remove('open'); }
+  $('overlay').addEventListener('click',e=>{if(e.target===$('overlay'))closeModal();});
+
+  function saveStudent(){
+    const id=parseInt($('f-id').value);
+    const name=$('f-name').value.trim();
+    const email=$('f-email').value.trim();
+    const course=$('f-course').value.trim();
+    const year=parseInt($('f-year').value);
+    const dept=$('f-dept').value.trim();
+    if(!id||!name||!email||!course||!dept){toast('⚠️ Please fill all fields',false);return;}
+    if(students[id]){toast(`⚠️ Student ID ${id} already exists`,false);return;}
+    addStudentData(id,name,email,course,year,dept);
+    $('studentSelect').value=id;
+    closeModal();
+    selectStudent(id);
+    toast(`✅ ${name} added!`);
+    setTimeout(()=>load('parallel'),300);
+  }
+
+  function delStudent(id,e){
+    e.stopPropagation();
+    if(id===1){toast('⚠️ Cannot remove default student',false);return;}
+    delete students[id];
+    $('chip-'+id)?.remove();
+    $('studentSelect').querySelector(`option[value="${id}"]`)?.remove();
+    selectStudent(1);$('studentSelect').value=1;
+    toast(`🗑 Student #${id} removed`);
+  }
+</script>
+</body>
+</html>
